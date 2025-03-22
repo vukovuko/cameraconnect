@@ -1,28 +1,24 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 
 export const useSocket = (sessionId: string): Socket | null => {
-  const socketRef = useRef<Socket | null>(null);
+  const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    const socket = io('/', {
+    const socketInstance = io('http://localhost:3000', {
       query: { sessionId },
     });
 
-    socketRef.current = socket;
-
-    socket.on('connect', () => {
-      console.log(`Connected to server. Socket ID: ${socket.id}`);
+    socketInstance.on('connect', () => {
+      console.log('✅ Connected to server. Socket ID:', socketInstance.id);
     });
 
-    socket.on('disconnect', () => {
-      console.log('Disconnected from server');
-    });
+    setSocket(socketInstance);
 
     return () => {
-      socket.disconnect();
+      socketInstance.disconnect();
     };
   }, [sessionId]);
 
-  return socketRef.current;
+  return socket;
 };
